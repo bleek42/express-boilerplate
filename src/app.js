@@ -6,7 +6,12 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
+
 const { NODE_ENV } = require('./config');
+
+const validateBearerToken = require('./valid-token');
+const handleError = require('./error');
+const bookmarksRouter = require('./bookmarks/bookmarks-router'); //need to code bookmarks router module
 
 const app = express();
 
@@ -17,23 +22,14 @@ const morganOption = (NODE_ENV === 'production')
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
+app.use(validateBearerToken);
+
+app.use(bookmarksRouter);
 
 app.get('/', (req, res) => {
-  res.send('Hello, boilerplate!');
+  res.send('Hello, Bookmarks!');
 });
 
-app.use(function errorHandler(error, req, res, next) {
-  let response;
-  if(NODE_ENV === 'production') {
-    response = { error: { message: 'server error' } };
-  } else {
-    console.error(error);
-    response = { message: error.message, error };
-  }
-  res.status(500).json(response);
-});
-
-
-
+app.use(handleError);
 
 module.exports = app;
